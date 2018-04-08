@@ -1,16 +1,21 @@
 var path = require('path')
 var webpack = require('webpack')
 
+const constants = require('./constants');
+
 module.exports = {
     entry: './src/main.js',
     output: {
         path: path.resolve(__dirname, './dist'),
-        publicPath: 'http://localhost:8080/dist/',
-        filename: 'build.js'
+        publicPath: constants.PUBLIC_PATH,
+        filename: constants.MAIN_SCRIPT
     },
     module: {
         rules: [
             {
+                test: /\.user\.js$/,
+                loader: 'babel-loader',
+            }, {
                 test: /\.css$/,
                 use: [
                     'vue-style-loader',
@@ -22,13 +27,12 @@ module.exports = {
                 options: {
                     loaders: {
                     }
-                    // other vue-loader options go here
                 }
             },
             {
                 test: /\.js$/,
-                loader: 'babel-loader',
-                exclude: /node_modules/
+                use: ['to-string-loader', 'babel-loader'],
+                exclude: /(node_modules|\.user\.js$)/
             },
             {
                 test: /\.(png|jpg|gif|svg)$/,
@@ -63,7 +67,7 @@ if (process.env.NODE_ENV === 'production') {
         new webpack.DefinePlugin({
             'process.env': {
                 NODE_ENV: '"production"'
-            }
+            },
         }),
         new webpack.optimize.UglifyJsPlugin({
             sourceMap: true,
