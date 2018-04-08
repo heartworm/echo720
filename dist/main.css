@@ -1,0 +1,11 @@
+.echo720__body--app-visible {
+    background-color: white !important;
+}
+.echo720__launch-button {
+    margin: 0 10px;
+}
+.echo720__launch-button--active {
+    font-weight: bold;
+    color: #c408e0;
+}
+
