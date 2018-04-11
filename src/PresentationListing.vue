@@ -1,10 +1,11 @@
 <template>
     <article class="echo720-listing">
-        <dynamic-thumbnail class="echo720-listing__thumbnail" v-bind:hrefs="presentation.thumbnails"></dynamic-thumbnail>
+        <!-- <dynamic-thumbnail class="echo720-listing__thumbnail" v-bind:hrefs="presentation.thumbnails"></dynamic-thumbnail> -->
         <header class="echo720-listing__text">
-            <h1 class="echo720-listing__title">{{presentation.title}}</h1>
-            <p class="echo720-listing__info">Length: {{time}}</p>
-            <p class="echo720-listing__info">Week: {{presentation.week}}</p>
+            <h1 class="echo720-listing__title">{{presentation.title()}}</h1>
+            <p class="echo720-listing__info">Recorded: {{date}}</p>
+            <p class="echo720-listing__info">Length: {{duration}}</p>
+            <p class="echo720-listing__info">Week: {{presentation.week()}}</p>
         </header>
     </article>
 </template>
@@ -13,17 +14,22 @@ import DynamicThumbnail from './DynamicThumbnail.vue';
 export default {
     name: 'presentation-listing',
     props: ["presentation"],
-    computed: {
-        time() {
-            const ms = this.presentation.durationMS;
-            const hours = Math.round(ms / 1000 / 60 / 60).toString();
-            const minutes = Math.round(ms % (1000*60*60) / 1000 / 60).toString().padStart(2, '0');
-            const seconds = Math.round(ms % (1000*60) / 1000).toString().padStart(2, '0');
-            return `${hours}:${minutes}:${seconds}`
-        },
-    },
     components: {
         DynamicThumbnail
+    },
+    computed: {
+        duration() {
+            const d = this.presentation.duration();
+            const hours = Math.floor(d / (60 * 60)).toString();
+            const minutes = Math.floor(d % (60 * 60) / (60)).toString().padStart(2, '0');
+            const seconds = Math.round(d % (60)).toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        },
+        date() {
+            return this.presentation.date().toLocaleString();
+        }
+    },
+    mounted() {
     }
 }
 </script>

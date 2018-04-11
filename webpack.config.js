@@ -13,9 +13,6 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.user\.js$/,
-                loader: 'babel-loader',
-            }, {
                 test: /\.css$/,
                 use: [
                     'vue-style-loader',
@@ -28,13 +25,11 @@ module.exports = {
                     loaders: {
                     }
                 }
-            },
-            {
+            }, {
                 test: /\.js$/,
-                use: ['to-string-loader', 'babel-loader'],
-                exclude: /(node_modules|\.user\.js$)/
-            },
-            {
+                loader: 'babel-loader',
+                exclude: /node_modules/
+            }, {
                 test: /\.(png|jpg|gif|svg)$/,
                 loader: 'file-loader',
                 options: {

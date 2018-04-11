@@ -1,88 +1,120 @@
 <template>
-    <article class="echo720-viewer">
-        <div v-if="presentation===null">
-            choose a vid
+    <div class="echo720-viewer">
+        <div v-if="presentation !== null" class="echo720-viewer__overlay" v-bind:class="{'echo720-viewer__overlay--active': !playing}">
+            <div class="echo720-viewer__overlay-info">
+                <p class="echo720-viewer__overlay-p"><a href="#" v-on:click="exit">Back</a></p>
+                <p class="echo720-viewer__overlay-p">{{ title }}</p>
+            </div>
+
         </div>
-        <div v-else-if="!loaded">
-            loading...
-        </div>
-        <div v-else> 
-            <video ref="video" class="echo720-viewer__video" controls v-bind:poster="poster">
-                <source type="video/mp4" v-bind:src="details.src"/>
-            </video>
-            <input type="range" v-model="speed" value="1" min="0.5" max="3" step="0.1"/>
-            <span>{{speed}}x</span><button v-on:click="speed = 1">Reset Speed</button>
-            <button v-on:click="fullscreen">Fullscreen</button>
-        </div>
-    </article>
+        <video v-if="presentation !== null" ref="video" class="echo720-viewer__video" v-bind:poster="poster" v-bind:src="src" v-bind:controls="loaded">
+        </video>
+    </div>
 </template>
 
 <script>
 export default {
     name: "presentation-viewer",
     data: () => ({
-        details: null,
-        speed: 1
+        playing: false,
     }),
-    props: ["presentation", "sectionId"],
+    props: ["presentation", "exit"],
     computed: {
         title() {
-            return this.presentation.title;   
-        },
-        loaded() {
-            return this.details !== null;
+            return this.presentation.title();   
         },
         poster() {
-            return this.presentation.thumbnails[0];
+            return this.presentation.thumbnails()[0];
+        },
+        src() {
+            return this.presentation.videoSrc;
+        },
+        loaded() {
+            return this.presentation.loaded;
         },
     },
     watch: {
-        async presentation(p) {
-            const uuid = p.uuid;
-            this.details = null;
-            this.speed = 1;
-
-            const response = await fetch(`https://lecturecapture.qut.edu.au/ess/client/api/sections/${this.sectionId}/presentations/${uuid}/details.json`, {
-                credentials: 'include'
+        presentation(p) {
+            p.addChangeListener(() => {
+                this.$forceUpdate();
             });
-
-            const metadata = (await response.json()).presentation;
-
-            const downloadResponse = await fetch(metadata.vodcast, {
-                credentials: 'include'
-            });
-
-            const dp = new DOMParser();
-            const downloadPage = dp.parseFromString(await downloadResponse.text(), "text/html");
-            const src = downloadPage.querySelector("a[href$='download']").href;
-
-            if (uuid === this.presentation.uuid) {
-                this.details = {
-                    src, metadata
-                };
+            if (p.storage !== null) {
+                p.storage.watched = true;
+                const currentTime = p.storage.currentTime;
+                if (currentTime !== undefined) {
+                    this.$refs.video.currentTime = currentTime;
+                }
             }
-        },
-        speed(val) {
-            const video = this.$refs.video;
-            video.playbackRate = val;
-        },
-    },
-    methods: {
-        fullscreen() {
-            this.$refs.video.requestFullscreen();
         }
+    },
+    mounted() {
+        const vid = this.$refs.video;
+        vid.addEventListener('playing', () => {this.playing = true;});
+        vid.addEventListener('pause', () => {this.playing = false;});
+        vid.addEventListener('timeupdate', () => {
+            this.presentation.storage.currentTime = vid.currentTime;
+            console.log(vid.currentTime);
+        });
+        vid.addEventListener('durationchange', () => {
+            if (this.presentation.storage.currentTime !== undefined) { 
+                console.log('set time');
+                vid.currentTime = this.presentation.storage.currentTime;
+            }
+        });
     }
     
 };
 </script>
 
 <style>
-.echo720-viewer {
-    flex: 60%;
-}
+    .echo720-viewer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+    } 
 
-.echo720-viewer__video {
-    width: 100%;
-}
+    .echo720-viewer__overlay  {       
+        visibility: hidden;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        z-index: 1;
+    }
+
+    .echo720-viewer__overlay-info {
+        color: white;
+        margin: 10px;
+        border: 3px solid #515151;
+        background: rgba(62, 62, 62, 0.6);
+        font-family: monospace;
+        font-weight: bold;
+        text-shadow: 2px 2px rgba(62,62,62,1);
+        font-size: 2em;
+        padding: 10px 20px;
+    }
+
+    .echo720-viewer__overlay-p {
+        margin: 0.2em 0;
+    }
+
+    .echo720-viewer__overlay--active {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .echo720-viewer__video {
+        position: absolute;
+        height: 100%;
+        background: black;
+        width: 100%;
+    }
+
+
+
+
 </style>
 

@@ -105,7 +105,11 @@ class Echo720Loader {
         let currentWindow = unsafeWindow;
         while (currentWindow.frameElement !== null) {
             console.log(currentWindow);
-            currentWindow.frameElement.setAttribute("allowfullscreen", "allowfullscreen");
+            const frame = currentWindow.frameElement;
+            frame.setAttribute("allowfullscreen", "allowfullscreen");
+            frame.style.position = "absolute";
+            frame.style.left = '0';
+            frame.style.top  = '0';
             currentWindow = currentWindow.parent;
         }
     }

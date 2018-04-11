@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name     Echo720
-// @version  1523165131569
+// @version  1523442374573
 // @grant    GM_xmlhttpRequest
 // @grant    unsafeWindow
 // @namespace    https://github.com/heartworm/echo720
 // @description  A flashless UI for Echo360 Lectures.
 // @author       Shravan Lal
 // @match      *://*/*
-// @connect     raw.githubusercontent.com
+// @connect     localhost
 // ==/UserScript==
 
 "use strict";
@@ -67,7 +67,7 @@ class Echo720Loader {
         const response = await new Promise((resolve, reject) => {
             GM_xmlhttpRequest({
                 method: 'GET',
-                url: "https://raw.githubusercontent.com/heartworm/echo720/master/dist/" + path,
+                url: "http://localhost:8080/dist/" + path,
                 overrideMimeType: "text/plain",
                 onload(result) {
                     resolve(result);
