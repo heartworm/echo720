@@ -10,6 +10,9 @@
     "build": "cross-env NODE_ENV=production node ./generate-userscript.js && cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
+    "@fortawesome/fontawesome": "^1.1.5",
+    "@fortawesome/fontawesome-free-solid": "^5.0.10",
+    "@fortawesome/vue-fontawesome": "0.0.22",
     "babel-polyfill": "^6.26.0",
     "vue": "^2.5.11"
   },

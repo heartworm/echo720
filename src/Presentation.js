@@ -5,11 +5,11 @@ export default class Presentation {
         this.videoSrc = null;
         this.loaded = false;
         this.error = null;
-        this.storage = this.loadStorage();
         this.request = request;
         this.sectionId = sectionId;
         this.changeListeners = [];
-        
+        this.storageKey = `presenation__${this.uuid()}`;
+        this.storage = this.loadStorage();
         this.loadDetails();
     }
 
@@ -24,24 +24,23 @@ export default class Presentation {
     }
     
     loadStorage() {
-        const key = `presenation__${this.uuid()}`;
         const self = this;
         if (Storage) {
             try {
-                const storedJSON = window.localStorage.getItem(key);
+                const storedJSON = window.localStorage.getItem(this.storageKey);
                 let storedData = {};
                 if (storedJSON !== null) {
                     try {
                         storedData = JSON.parse(storedJSON);
                         console.log(storedData);
                     } catch (e) {
-                        window.localStorage.removeItem(key);
+                        window.localStorage.removeItem(this.storageKey);
                     }
                 }
                 return new Proxy(storedData, {
-                    set(obj, prop, val) {
-                        this[prop] = val;
-                        window.localStorage.setItem(key, JSON.stringify(this));
+                    set: (obj, prop, val) => {
+                        obj[prop] = val;
+                        window.localStorage.setItem(self.storageKey, JSON.stringify(obj));
                         self.onChange();
                         return true;
                     }
@@ -52,6 +51,14 @@ export default class Presentation {
         }
 
         return {};
+    }
+
+    resetStorage() {
+        if (Storage) {
+            window.localStorage.removeItem(this.storageKey);
+        }
+        this.storage = this.loadStorage();
+        this.onChange();
     }
 
     async loadDetails() {
@@ -79,6 +86,34 @@ export default class Presentation {
             this.error = e;
             this.onChange();
         }
+    }
+
+    unwatched() {
+        return !this.ended() && this.currentTime === 0;
+    }
+
+    setCurrentTime(c) {
+        this.storage.currentTime = c;
+    }
+
+    currentTime() {
+        return this.storage.currentTime || 0;
+    }
+
+    ended() {
+        return this.storage.ended === true;
+    }
+    
+    setEnded() {
+        this.storage.ended = true;
+    }
+
+    setLastWatched() {
+        this.storage.lastWatched = new Date();
+    }
+
+    lastWatched() {
+        return this.storage.lastWatched !== undefined ? new Date(this.storage.lastWatched) : null;
     }
 
     duration() {

@@ -2,14 +2,13 @@
     <div class="echo720-app">
 
         <div class="echo720-app__container" v-if="loaded">
-            <div class="echo720-app__chooser" v-show="chosenPresentation === null">
+            <div v-if="chosenPresentation === null">
                 <div class="echo720-app__header">
                     <h1 class="echo720-app__course-title">{{courseTitle}}</h1>
+                    <button class="echo720-app__exit-button" v-on:click="close">Exit Echo720</button>
                 </div>
-                <button class="echo720-app__exit-button" v-on:click="close">Exit Echo720</button>
-
                 <div class="echo720-app__list">
-                    <presentation-listing v-bind:presentation="presentation" v-for="presentation in presentations" :key="presentation.uuid()" v-on:click.native="chosenPresentation = presentation" />
+                    <presentation-listing v-bind:lastWatched="presentation === getLastWatched()" v-bind:choose="choose" v-bind:presentation="presentation" v-for="presentation in presentations" :key="presentation.uuid()" />
                 </div>
             </div>
             <presentation-viewer v-if="chosenPresentation !== null" v-bind:presentation="chosenPresentation" v-bind:exit="stopVideo"/>
@@ -41,6 +40,7 @@ export default {
         courseTitle() {
             return this.section.course.name;
         },
+        
     },
     mounted() {
         window.echo720Loader.appMounted(this.$el);
@@ -69,6 +69,12 @@ export default {
                     this.user = initData.user;
                 }
                 this.presentations = this.section.presentations.pageContents.map(p => new Presentation(p, this.sectionId, this.request));
+                for (const p of this.presentations) {
+                    p.addChangeListener(() => {
+                        this.$forceUpdate();
+                        console.log("change", this);
+                    });
+                }
                 this.loaded = true;                
             } catch (e) {
                 console.error(e);
@@ -90,6 +96,15 @@ export default {
         },
         stopVideo() {
             this.chosenPresentation = null;
+        },
+        choose(presentation) {
+            this.chosenPresentation = presentation;
+        },
+        getLastWatched() {
+            const lw = this.presentations.filter(p => p.lastWatched() !== null);
+            if (lw.length === 0) return null;
+            lw.sort((a, b) => b.lastWatched() - a.lastWatched());
+            return lw[0];
         }
     },
     components: {
@@ -113,8 +128,7 @@ export default {
 }
 .echo720-app__list {
     display: flex;
-    flex: 40%;
-    flex-direction: column;
+    flex-wrap: wrap;
 }
 .echo720-app__header {
     flex: 100%;

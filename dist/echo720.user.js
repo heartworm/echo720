@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name     Echo720
-// @version  1523442374573
+// @version  1523695424292
 // @grant    GM_xmlhttpRequest
 // @grant    unsafeWindow
 // @namespace    https://github.com/heartworm/echo720
 // @description  A flashless UI for Echo360 Lectures.
 // @author       Shravan Lal
 // @match      *://*/*
-// @connect     localhost
+// @connect     raw.githubusercontent.com
 // ==/UserScript==
 
 "use strict";
@@ -67,7 +67,7 @@ class Echo720Loader {
         const response = await new Promise((resolve, reject) => {
             GM_xmlhttpRequest({
                 method: 'GET',
-                url: "http://localhost:8080/dist/" + path,
+                url: "https://raw.githubusercontent.com/heartworm/echo720/master/dist/" + path,
                 overrideMimeType: "text/plain",
                 onload(result) {
                     resolve(result);
@@ -105,7 +105,11 @@ class Echo720Loader {
         let currentWindow = unsafeWindow;
         while (currentWindow.frameElement !== null) {
             console.log(currentWindow);
-            currentWindow.frameElement.setAttribute("allowfullscreen", "allowfullscreen");
+            const frame = currentWindow.frameElement;
+            frame.setAttribute("allowfullscreen", "allowfullscreen");
+            frame.style.position = "absolute";
+            frame.style.left = '0';
+            frame.style.top  = '0';
             currentWindow = currentWindow.parent;
         }
     }
